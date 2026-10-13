@@ -1,0 +1,129 @@
+api/generate.js
+// منطق توليد المحتوى (Server-side). مفتاح Gemini يبقى هنا فقط ولا يصل للمتصفح.
+// يعمل على Vercel كما هو. متغيرات البيئة: GEMINI_API_KEY (مطلوب)، GEMINI_MODEL (اختياري)
+
+const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+
+const KINDS = {
+  offer: 'رسالة عرض المنتج: تعرّف بالمنتج وأهم ميزة فيه بإيجاز',
+  discount: 'رسالة خصم: تركّز على العرض أو الخصم المذكور فقط',
+  launch: 'رسالة إطلاق منتج جديد: تعلن عن وصول المنتج',
+  urgency: 'رسالة Urgency: تعتمد على محدودية الوقت أو الكمية بصياغة عامة صادقة (مثل "الكمية محدودة" أو "لحق نفسك") دون أرقام أو مواعيد لم يذكرها المستخدم',
+  followup: 'رسالة متابعة لعميل سأل ولم يشترِ بعد: ودودة وغير ملحّة',
+  status: 'نص قصير جدًا (سطر إلى سطرين) لحالة واتساب Status',
+};
+
+const TONES = {
+  egyptian: 'مصرية ودودة (عامية مصرية مفهومة وغير مبالغ فيها)',
+  pro: 'احترافية (عربية بيضاء مهذبة)',
+  short: 'قصيرة ومباشرة (أقل عدد ممكن من الكلمات)',
+  strong: 'تسويقية قوية (حماس وإقناع دون مبالغة أو ادعاءات)',
+};
+
+const clean = (v, n) => String(v ?? '').replace(/\s+/g, ' ').trim().slice(0, n);
+
+function buildPrompt(f, kinds, avoid) {
+  const spec = kinds
+    .map((k) => `- "${k.key}" (${k.count} رسالة): ${KINDS[k.key]}`)
+    .join('\n');
+  return `أنت كاتب محتوى محترف لرسائل WhatsApp لأصحاب المشروعات الصغيرة.
+
+بيانات المنتج (لا تضف عليها أي معلومة):
+- نوع النشاط: ${f.business}
+- اسم المنتج: ${f.product}
+- السعر: ${f.price || 'غير محدد'}
+- العرض أو الخصم: ${f.offer || 'لا يوجد'}
+- الوصف: ${f.desc || 'غير مذكور'}
+- الجمهور المستهدف: ${f.audience || 'غير محدد'}
+- النبرة: ${TONES[f.tone]}
+
+المطلوب إنشاء:
+${spec}
+
+القواعد:
+- عربية طبيعية مناسبة للنبرة. لا كلمات تسويقية مصطنعة.
+- لا تخترع معلومات أو أسعارًا أو خصومات أو نسبًا أو تواريخ أو أرقام كمية. إن لم يوجد سعر أو عرض فلا تذكر أيًّا منهما.
+- كل رسالة مختلفة عن غيرها في الافتتاحية والصياغة.
+- قصيرة ومناسبة للموبايل، وجاهزة للنسخ المباشر.
+- Emoji باعتدال (0 إلى 2 في الرسالة).
+- كل رسالة (عدا Status) تنتهي بـ Call To Action واضح مثل: ابعتلي رسالة، ردّ علينا، اطلب الآن.
+${avoid.length ? `- لا تكرر ولا تشابه هذه الصياغات السابقة:\n${avoid.map((a) => `  * ${a}`).join('\n')}\n` : ''}
+أعد JSON فقط بهذا الشكل: كل مفتاح من المفاتيح المطلوبة يحمل مصفوفة نصوص بالعدد المطلوب بالضبط.`;
+}
+
+module.exports = async function handler(req, res) {
+  res.setHeader('Cache-Control', 'no-store');
+  if (req.method !== 'POST') return res.status(405).json({ error: 'الطريقة غير مسموحة' });
+
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) return res.status(500).json({ error: 'لم يتم ضبط GEMINI_API_KEY على السيرفر' });
+
+  const b = req.body || {};
+  const f = b.form || {};
+  const form = {
+    business: clean(f.business, 40),
+    product: clean(f.product, 120),
+    price: clean(f.price, 40),
+    offer: clean(f.offer, 200),
+    desc: clean(f.desc, 400),
+    audience: clean(f.audience, 120),
+    tone: TONES[f.tone] ? f.tone : 'egyptian',
+  };
+  if (!form.product) return res.status(400).json({ error: 'اسم المنتج مطلوب' });
+
+  const kinds = (Array.isArray(b.kinds) ? b.kinds : [])
+    .filter((k) => KINDS[k && k.key])
+    .map((k) => ({ key: k.key, count: Math.min(Math.max(parseInt(k.count, 10) || 1, 1), 10) }));
+  if (!kinds.length) return res.status(400).json({ error: 'نوع الرسالة غير صالح' });
+  const avoid = (Array.isArray(b.avoid) ? b.avoid : []).slice(0, 10).map((a) => clean(a, 300));
+
+  const schema = {
+    type: 'OBJECT',
+    properties: Object.fromEntries(kinds.map((k) => [k.key, { type: 'ARRAY', items: { type: 'STRING' } }])),
+    required: kinds.map((k) => k.key),
+  };
+
+  try {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 50000);
+    const r = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`,
+      {
+        method: 'POST',
+        signal: ctrl.signal,
+        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+        body: JSON.stringify({
+          contents: [{ role: 'user', parts: [{ text: buildPrompt(form, kinds, avoid) }] }],
+          generationConfig: {
+            temperature: 0.9,
+            responseMimeType: 'application/json',
+            responseSchema: schema,
+            thinkingConfig: { thinkingBudget: 0 },
+          },
+        }),
+      }
+    );
+    clearTimeout(timer);
+    const data = await r.json();
+    if (!r.ok) {
+      const code = data?.error?.code;
+      return res.status(502).json({
+        error: code === 429 ? 'الخدمة مزدحمة حاليًا، حاول بعد قليل' : 'تعذّر الاتصال بخدمة التوليد',
+      });
+    }
+    const text = data?.candidates?.[0]?.content?.parts?.map((p) => p.text || '').join('') || '';
+    const parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
+    const out = {};
+    for (const k of kinds) {
+      const arr = (parsed[k.key] || []).map((s) => String(s).trim()).filter(Boolean).slice(0, k.count);
+      if (!arr.length) throw new Error('empty');
+      out[k.key] = arr;
+    }
+    return res.status(200).json({ messages: out });
+  } catch (e) {
+    const timeout = e && e.name === 'AbortError';
+    return res.status(502).json({
+      error: timeout ? 'استغرق التوليد وقتًا طويلًا، حاول مرة أخرى' : 'فشل توليد الرسائل، حاول مرة أخرى',
+    });
+  }
+};
