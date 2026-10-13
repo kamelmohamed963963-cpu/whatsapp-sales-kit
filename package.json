@@ -4,12 +4,7 @@ package.json
   "name": "whatsapp-sales-kit",
   "version": "1.0.0",
   "private": true,
-  "description": "WhatsApp Sales Kit",
-  "main": "index.html",
   "engines": {
     "node": ">=18"
-  },
-  "dependencies": {
-    "@google/generative-ai": "^0.21.0"
   }
 }
