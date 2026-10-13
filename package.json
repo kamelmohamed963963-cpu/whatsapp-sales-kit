@@ -1,0 +1,12 @@
+package.json
+```json
+{
+  "name": "whatsapp-sales-kit",
+  "version": "1.0.0",
+  "description": "قالب واتساب للتسويق",
+  "main": "index.html",
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0"
+  }
+}
+```
