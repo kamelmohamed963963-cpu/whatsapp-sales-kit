@@ -2,7 +2,7 @@ api/generate.js
 // منطق توليد المحتوى (Server-side). مفتاح Gemini يبقى هنا فقط ولا يصل للمتصفح.
 // يعمل على Vercel كما هو. متغيرات البيئة: GEMINI_API_KEY (مطلوب)، GEMINI_MODEL (اختياري)
 
-const MODEL = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 
 const KINDS = {
   offer: 'رسالة عرض المنتج: تعرّف بالمنتج وأهم ميزة فيه بإيجاز',
