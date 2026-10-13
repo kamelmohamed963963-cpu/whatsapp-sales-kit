@@ -1,188 +1,139 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0F5A44">
-<title>WhatsApp Sales Kit</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
-<style>
-:root{--bg:#EEF3F0;--ink:#12241E;--mut:#5B6F67;--pri:#0F5A44;--pri2:#0B4535;--bub:#D9F4C7;--line:#D3DED8;--card:#fff;--err:#B3261E}
-@media(prefers-color-scheme:dark){:root:not([data-t=l]){--bg:#0D1613;--ink:#E6F0EB;--mut:#92A69D;--pri:#2FA77D;--pri2:#278C69;--bub:#1F4A36;--line:#27382F;--card:#15211C;--err:#F2B8B5}}
-*{box-sizing:border-box;margin:0}
-html,body{background:var(--bg);color:var(--ink);font-family:Cairo,system-ui,sans-serif;line-height:1.7}
-body{padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
-header{background:var(--pri);color:#fff;padding:22px 16px 26px}
-header h1{font-size:24px;font-weight:800;line-height:1.3}
-header p{opacity:.85;font-size:14px;margin-top:4px}
-main{max-width:640px;margin:0 auto;padding:0 14px 60px}
-.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-top:-14px;position:relative}
-label{display:block;font-weight:600;font-size:14px;margin:12px 0 4px}
-input,select,textarea{width:100%;font:inherit;font-size:16px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
-input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid var(--pri);outline-offset:1px}
-textarea{resize:vertical;min-height:70px}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.btn{font:inherit;font-weight:600;border:0;border-radius:10px;padding:12px 14px;cursor:pointer;background:var(--pri);color:#fff;width:100%;font-size:16px}
-.btn:hover{background:var(--pri2)}
-.btn.alt{background:transparent;color:var(--pri);border:1.5px solid var(--pri)}
-.btn.ghost{background:transparent;color:var(--mut);border:1px solid var(--line);font-size:14px;padding:9px}
-.btn:disabled{opacity:.55;cursor:wait}
-.acts{display:grid;gap:8px;margin-top:16px}
-.err{background:color-mix(in srgb,var(--err) 12%,transparent);color:var(--err);border-radius:10px;padding:10px 12px;margin-top:14px;font-size:14px}
-.sec{margin-top:26px}
-.sec h2{font-size:17px;font-weight:800;margin-bottom:8px}
-.msg{background:var(--bub);color:var(--ink);border-radius:14px 14px 14px 4px;padding:12px 14px;margin-bottom:10px;box-shadow:0 1px 0 var(--line)}
-.txt{white-space:pre-wrap;word-break:break-word;font-size:15.5px;min-height:24px;border-radius:6px}
-.txt[contenteditable=true]{background:var(--card);padding:6px 8px;outline:2px solid var(--pri)}
-.tools{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
-.tools button{font:inherit;font-size:13px;font-weight:600;border:1px solid color-mix(in srgb,var(--ink) 25%,transparent);background:transparent;color:var(--ink);border-radius:8px;padding:5px 12px;cursor:pointer}
-.tools button:disabled{opacity:.5}
-.sk{height:64px;border-radius:14px;margin-bottom:10px;background:linear-gradient(90deg,var(--line),var(--card),var(--line));background-size:200% 100%;animation:sh 1.2s linear infinite}
-@keyframes sh{to{background-position:-200% 0}}
-@media(prefers-reduced-motion:reduce){.sk{animation:none}}
-.toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 18px;border-radius:20px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s}
-.toast.on{opacity:1}
-.hint{color:var(--mut);font-size:13px;margin-top:8px;text-align:center}
-</style>
-</head>
-<body>
-<header>
-  <h1>WhatsApp Sales Kit</h1>
-  <p>اكتب بيانات منتجك واحصل على رسائل واتساب جاهزة للنسخ</p>
-</header>
-<main>
-  <section class="panel">
-    <label for="business">نوع النشاط</label>
-    <select id="business">
-      <option>ملابس</option><option>أحذية</option><option>عطور</option><option>مستحضرات تجميل</option>
-      <option>إكسسوارات</option><option>مطعم</option><option>حلويات</option><option>خدمات</option><option>أخرى</option>
-    </select>
-    <label for="product">اسم المنتج *</label>
-    <input id="product" maxlength="120" placeholder="مثال: عباية كريب سوداء">
-    <div class="row">
-      <div><label for="price">السعر</label><input id="price" maxlength="40" placeholder="اختياري"></div>
-      <div><label for="offer">العرض أو الخصم</label><input id="offer" maxlength="200" placeholder="اختياري"></div>
-    </div>
-    <label for="desc">وصف مختصر للمنتج</label>
-    <textarea id="desc" maxlength="400" placeholder="الخامة، المقاسات، الميزة الأساسية..."></textarea>
-    <label for="audience">الجمهور المستهدف</label>
-    <input id="audience" maxlength="120" placeholder="مثال: بنات وسيدات من 20 إلى 40">
-    <label for="tone">نبرة الرسالة</label>
-    <select id="tone">
-      <option value="egyptian">مصرية ودودة</option><option value="pro">احترافية</option>
-      <option value="short">قصيرة ومباشرة</option><option value="strong">تسويقية قوية</option>
-    </select>
-    <div class="acts">
-      <button class="btn" id="go">أنشئ رسائل البيع</button>
-      <button class="btn alt" id="pack">إنشاء حزمة كاملة (30 رسالة)</button>
-      <button class="btn ghost" id="clear">Clear — منتج جديد</button>
-    </div>
-    <div class="err" id="err" role="alert" hidden></div>
-  </section>
-  <div id="out" aria-live="polite"></div>
-  <p class="hint">راجع كل رسالة قبل إرسالها وعدّلها لو احتجت.</p>
-</main>
-<div class="toast" id="toast"></div>
+// منطق توليد المحتوى (Server-side). مفتاح Gemini يبقى هنا فقط ولا يصل للمتصفح.
+// يعمل على Vercel كما هو. متغيرات البيئة: GEMINI_API_KEY (مطلوب)، GEMINI_MODEL (اختياري)
 
-<script>
-/* ===== طبقة الخدمة: كل الاتصال بالتوليد هنا فقط ===== */
-const Service = {
-  endpoint: '/api/generate',
-  async generate(form, kinds, avoid = []) {
-    let r;
-    try {
-      r = await fetch(this.endpoint, {
+const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+
+const KINDS = {
+  offer: 'رسالة عرض المنتج: تعرّف بالمنتج وأهم ميزة فيه بإيجاز',
+  discount: 'رسالة خصم: تركّز على العرض أو الخصم المذكور فقط',
+  launch: 'رسالة إطلاق منتج جديد: تعلن عن وصول المنتج',
+  urgency: 'رسالة Urgency: تعتمد على محدودية الوقت أو الكمية بصياغة عامة صادقة (مثل "الكمية محدودة" أو "لحق نفسك") دون أرقام أو مواعيد لم يذكرها المستخدم',
+  followup: 'رسالة متابعة لعميل سأل ولم يشترِ بعد: ودودة وغير ملحّة',
+  status: 'نص قصير جدًا (سطر إلى سطرين) لحالة واتساب Status',
+};
+
+const TONES = {
+  egyptian: 'مصرية ودودة (عامية مصرية مفهومة وغير مبالغ فيها)',
+  pro: 'احترافية (عربية بيضاء مهذبة)',
+  short: 'قصيرة ومباشرة (أقل عدد ممكن من الكلمات)',
+  strong: 'تسويقية قوية (حماس وإقناع دون مبالغة أو ادعاءات)',
+};
+
+const clean = (v, n) => String(v ?? '').replace(/\s+/g, ' ').trim().slice(0, n);
+
+function buildPrompt(f, kinds, avoid) {
+  const spec = kinds
+    .map((k) => `- "${k.key}" (${k.count} رسالة): ${KINDS[k.key]}`)
+    .join('\n');
+  return `أنت كاتب محتوى محترف لرسائل WhatsApp لأصحاب المشروعات الصغيرة.
+
+بيانات المنتج (لا تضف عليها أي معلومة):
+- نوع النشاط: ${f.business}
+- اسم المنتج: ${f.product}
+- السعر: ${f.price || 'غير محدد'}
+- العرض أو الخصم: ${f.offer || 'لا يوجد'}
+- الوصف: ${f.desc || 'غير مذكور'}
+- الجمهور المستهدف: ${f.audience || 'غير محدد'}
+- النبرة: ${TONES[f.tone]}
+
+المطلوب إنشاء:
+${spec}
+
+القواعد:
+- عربية طبيعية مناسبة للنبرة. لا كلمات تسويقية مصطنعة.
+- لا تخترع معلومات أو أسعارًا أو خصومات أو نسبًا أو تواريخ أو أرقام كمية. إن لم يوجد سعر أو عرض فلا تذكر أيًّا منهما.
+- كل رسالة مختلفة عن غيرها في الافتتاحية والصياغة.
+- قصيرة ومناسبة للموبايل، وجاهزة للنسخ المباشر.
+- Emoji باعتدال (0 إلى 2 في الرسالة).
+- كل رسالة (عدا Status) تنتهي بـ Call To Action واضح مثل: ابعتلي رسالة، ردّ علينا، اطلب الآن.
+${avoid.length ? `- لا تكرر ولا تشابه هذه الصياغات السابقة:\n${avoid.map((a) => `  * ${a}`).join('\n')}\n` : ''}
+أعد JSON فقط بهذا الشكل: كل مفتاح من المفاتيح المطلوبة يحمل مصفوفة نصوص بالعدد المطلوب بالضبط.`;
+}
+
+async function run(req, res) {
+  res.setHeader('Cache-Control', 'no-store');
+  if (req.method !== 'POST') return res.status(405).json({ error: 'الطريقة غير مسموحة' });
+
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) return res.status(500).json({ error: 'لم يتم ضبط GEMINI_API_KEY على السيرفر' });
+
+  const b = req.body || {};
+  const f = b.form || {};
+  const form = {
+    business: clean(f.business, 40),
+    product: clean(f.product, 120),
+    price: clean(f.price, 40),
+    offer: clean(f.offer, 200),
+    desc: clean(f.desc, 400),
+    audience: clean(f.audience, 120),
+    tone: TONES[f.tone] ? f.tone : 'egyptian',
+  };
+  if (!form.product) return res.status(400).json({ error: 'اسم المنتج مطلوب' });
+
+  const kinds = (Array.isArray(b.kinds) ? b.kinds : [])
+    .filter((k) => KINDS[k && k.key])
+    .map((k) => ({ key: k.key, count: Math.min(Math.max(parseInt(k.count, 10) || 1, 1), 10) }));
+  if (!kinds.length) return res.status(400).json({ error: 'نوع الرسالة غير صالح' });
+  const avoid = (Array.isArray(b.avoid) ? b.avoid : []).slice(0, 10).map((a) => clean(a, 300));
+
+  const schema = {
+    type: 'OBJECT',
+    properties: Object.fromEntries(kinds.map((k) => [k.key, { type: 'ARRAY', items: { type: 'STRING' } }])),
+    required: kinds.map((k) => k.key),
+  };
+
+  try {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 50000);
+    const r = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`,
+      {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ form, kinds, avoid })
+        signal: ctrl.signal,
+        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+        body: JSON.stringify({
+          contents: [{ role: 'user', parts: [{ text: buildPrompt(form, kinds, avoid) }] }],
+          generationConfig: {
+            temperature: 0.9,
+            responseMimeType: 'application/json',
+            responseSchema: schema,
+            thinkingConfig: { thinkingBudget: 0 },
+          },
+        }),
+      }
+    );
+    clearTimeout(timer);
+    const data = await r.json();
+    if (!r.ok) {
+      console.error('Gemini error', r.status, JSON.stringify(data).slice(0, 500));
+      const code = data?.error?.code;
+      return res.status(502).json({
+        error: code === 429 ? 'الخدمة مزدحمة حاليًا، حاول بعد قليل' : 'تعذّر الاتصال بخدمة التوليد',
       });
-    } catch { throw new Error('لا يوجد اتصال بالإنترنت أو بالسيرفر'); }
-    let d = {};
-    try { d = await r.json(); } catch {}
-    if (!r.ok || !d.messages) throw new Error(d.error || 'فشل توليد الرسائل، حاول مرة أخرى');
-    return d.messages;
+    }
+    const text = data?.candidates?.[0]?.content?.parts?.map((p) => p.text || '').join('') || '';
+    const parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
+    const out = {};
+    for (const k of kinds) {
+      const arr = (parsed[k.key] || []).map((s) => String(s).trim()).filter(Boolean).slice(0, k.count);
+      if (!arr.length) throw new Error('empty');
+      out[k.key] = arr;
+    }
+    return res.status(200).json({ messages: out });
+  } catch (e) {
+    console.error('generate failed:', e && e.stack ? e.stack : e);
+    const timeout = e && e.name === 'AbortError';
+    return res.status(502).json({
+      error: timeout ? 'استغرق التوليد وقتًا طويلًا، حاول مرة أخرى' : 'فشل توليد الرسائل، حاول مرة أخرى',
+    });
+  }
+}
+
+module.exports = async function handler(req, res) {
+  try {
+    return await run(req, res);
+  } catch (e) {
+    console.error('generate crashed:', e && e.stack ? e.stack : e);
+    return res.status(500).json({ error: 'خطأ داخلي في السيرفر' });
   }
 };
-
-/* ===== واجهة المستخدم ===== */
-const $ = id => document.getElementById(id);
-const TITLES = { offer:'رسالة عرض المنتج', discount:'رسالة خصم', launch:'إطلاق منتج جديد', urgency:'رسالة Urgency', followup:'Follow-up', status:'Status' };
-const SINGLE = ['offer','discount','launch','urgency','followup','status'].map(key => ({ key, count: 1 }));
-const PACK = [['offer',10],['discount',5],['followup',5],['status',5],['launch',5]].map(([key,count]) => ({ key, count }));
-let lastForm = null;
-
-const readForm = () => ({
-  business: $('business').value, product: $('product').value.trim(), price: $('price').value.trim(),
-  offer: $('offer').value.trim(), desc: $('desc').value.trim(), audience: $('audience').value.trim(), tone: $('tone').value
-});
-const showErr = m => { $('err').textContent = m || ''; $('err').hidden = !m; };
-const toast = m => { const t = $('toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('on'), 1400); };
-
-async function copy(text) {
-  try { await navigator.clipboard.writeText(text); }
-  catch {
-    const a = document.createElement('textarea'); a.value = text; document.body.appendChild(a);
-    a.select(); document.execCommand('copy'); a.remove();
-  }
-  toast('تم النسخ');
-}
-
-function card(key, text) {
-  const el = document.createElement('div'); el.className = 'msg'; el.dataset.key = key;
-  el.innerHTML = '<div class="txt"></div><div class="tools"><button data-a="copy">Copy</button><button data-a="regen">Regenerate</button><button data-a="edit">Edit</button></div>';
-  el.querySelector('.txt').textContent = text;
-  return el;
-}
-
-function render(messages) {
-  const out = $('out'); out.innerHTML = '';
-  for (const [key, list] of Object.entries(messages)) {
-    const s = document.createElement('section'); s.className = 'sec';
-    s.innerHTML = '<h2></h2>'; s.firstChild.textContent = TITLES[key] + (list.length > 1 ? ' (' + list.length + ')' : '');
-    list.forEach(t => s.appendChild(card(key, t)));
-    out.appendChild(s);
-  }
-}
-
-function skeleton(n) { $('out').innerHTML = '<div class="sec">' + '<div class="sk"></div>'.repeat(n) + '</div>'; }
-
-async function run(kinds, skCount) {
-  showErr(''); const f = readForm();
-  if (!f.product) { showErr('اكتب اسم المنتج أولًا'); $('product').focus(); return; }
-  lastForm = f; $('go').disabled = $('pack').disabled = true; skeleton(skCount);
-  try { render(await Service.generate(f, kinds)); $('out').scrollIntoView({ behavior: 'smooth' }); }
-  catch (e) { $('out').innerHTML = ''; showErr(e.message); }
-  finally { $('go').disabled = $('pack').disabled = false; }
-}
-
-$('go').onclick = () => run(SINGLE, 6);
-$('pack').onclick = () => run(PACK, 8);
-$('clear').onclick = () => {
-  ['product','price','offer','desc','audience'].forEach(i => $(i).value = '');
-  $('out').innerHTML = ''; showErr(''); lastForm = null; scrollTo({ top: 0, behavior: 'smooth' }); $('product').focus();
-};
-
-$('out').onclick = async e => {
-  const b = e.target.closest('button'); if (!b) return;
-  const el = b.closest('.msg'), txt = el.querySelector('.txt');
-  if (b.dataset.a === 'copy') return copy(txt.textContent);
-  if (b.dataset.a === 'edit') {
-    const on = txt.isContentEditable;
-    txt.contentEditable = !on; b.textContent = on ? 'Edit' : 'حفظ';
-    if (!on) txt.focus(); return;
-  }
-  if (b.dataset.a === 'regen') {
-    const f = lastForm || readForm(); showErr('');
-    const old = b.textContent; b.disabled = true; b.textContent = '...';
-    const siblings = [...el.parentElement.querySelectorAll('.msg')].map(m => m.querySelector('.txt').textContent);
-    try {
-      const r = await Service.generate(f, [{ key: el.dataset.key, count: 1 }], siblings);
-      txt.textContent = r[el.dataset.key][0]; txt.contentEditable = false;
-      el.querySelector('[data-a=edit]').textContent = 'Edit';
-    } catch (err) { showErr(err.message); }
-    finally { b.disabled = false; b.textContent = old; }
-  }
-};
-</script>
-</body>
-</html>
